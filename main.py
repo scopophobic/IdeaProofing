@@ -23,6 +23,7 @@ async def validate_idea(data: Idea):
         "AI tool that helps authors write fiction novels faster",
         "A system to track food spoilage using IoT sensors"
     ]
+    # dummy
     
     # Generate embeddings for each
     existing_embeddings = model.encode(existing_ideas)
@@ -33,12 +34,15 @@ async def validate_idea(data: Idea):
     # Pair scores with ideas and sort by similarity
     top_matches = sorted(zip(existing_ideas, similarities), key=lambda x: x[1], reverse=True)
 
-    # Novelty score is inverse of the highest similarity
-    novelty_score = 100 - int(top_matches[0][1] * 100)
+    # Cast similarity scores to float for JSON serialization
+    top_similar_ideas = [
+        {"idea": idea, "similarity": round(float(score), 2)} for idea, score in top_matches[:3]
+    ]
+
+    # Novelty score as a plain int
+    novelty_score = 100 - int(float(top_matches[0][1]) * 100)
 
     return {
         "novelty_score": novelty_score,
-        "top_similar_ideas": [
-            {"idea": idea, "similarity": round(score, 2)} for idea, score in top_matches[:3]
-        ]
+        "top_similar_ideas": top_similar_ideas
     }
