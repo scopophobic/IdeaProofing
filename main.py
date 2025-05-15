@@ -2,14 +2,14 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-
+from llm import generate_queries
 # Load the model once
+from models import Idea
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 app = FastAPI()
 
-class Idea(BaseModel):
-    idea_text: str
+
 
 @app.post("/validate")
 async def validate_idea(data: Idea):
@@ -24,6 +24,7 @@ async def validate_idea(data: Idea):
         "A system to track food spoilage using IoT sensors"
     ]
     # dummy
+    queries = generate_queries(data.idea_text)
     
     # Generate embeddings for each
     existing_embeddings = model.encode(existing_ideas)
