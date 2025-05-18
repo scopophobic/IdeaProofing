@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -8,17 +9,23 @@ def score_novelty(user_text, patent_results):
     texts = [item["summary"] for item in patent_results]
     patent_vecs = model.encode(texts)
     sims = cosine_similarity(user_vec, patent_vecs)[0]
-    
-    sorted_results = sorted(zip(patent_results, sims), key=lambda x: x[1], reverse=True)
-    top_matches = [
+
+    all_matches = [
         {
             "title": r["title"],
             "summary": r["summary"],
             "link": r["link"],
-            "similarity": round(score, 2)
+            "similarity": round(float(score), 2)  # force float
         }
-        for r, score in sorted_results[:3]
+        for r, score in zip(patent_results, sims)
     ]
-    
-    novelty_score = 100 - int(sorted_results[0][1] * 100)
-    return novelty_score, top_matches
+
+    sorted_matches = sorted(all_matches, key=lambda x: x["similarity"], reverse=True)
+
+    novelty_score = 100 - int(sorted_matches[0]["similarity"] * 100)
+
+    # ✅ Always return a dictionary
+    return {
+        "novelty_score": float(novelty_score),
+        "results": sorted_matches
+    }

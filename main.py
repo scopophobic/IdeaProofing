@@ -1,49 +1,41 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 from llm import generate_queries
-# Load the model once
+from google_patents import search_google_patents_api
+from similarity import score_novelty
 from models import Idea
-model = SentenceTransformer("all-MiniLM-L6-v2")
+import numpy as np
+import json
 
 app = FastAPI()
 
-
-
 @app.post("/validate")
 async def validate_idea(data: Idea):
-    user_embedding = model.encode(data.idea_text)
+    print("🔹 Received idea:", data.idea_text)
 
-    # Sample dummy ideas to compare (in a real app, fetch from DB or API)
-    existing_ideas = [
-        "An AI-based virtual assistant for fitness coaching",
-        "A platform for decentralized car sharing using blockchain",
-        "A smart mirror that gives beauty and health tips",
-        "AI tool that helps authors write fiction novels faster",
-        "A system to track food spoilage using IoT sensors"
-    ]
-    # dummy
-    queries = generate_queries(data.idea_text)
-    
-    # Generate embeddings for each
-    existing_embeddings = model.encode(existing_ideas)
+    # Step 1: Generate search queries
+    queries = json.loads(generate_queries(data.idea_text))
+    print("🔹 Generated Queries:", queries)
 
-    # Compare user idea to each existing idea
-    similarities = cosine_similarity([user_embedding], existing_embeddings)[0]
+    # Step 2: Search Google Patents
+    all_results = []
+    for query in queries["queries"]:
+        print(f"🔍 Searching for: {query}")
+        results = search_google_patents_api(query, num_results=5)
+        print(f"🔍 Results for '{query}':", results)
+        all_results.extend(results)
 
-    # Pair scores with ideas and sort by similarity
-    top_matches = sorted(zip(existing_ideas, similarities), key=lambda x: x[1], reverse=True)
+    print("🔹 Total Results Fetched:", len(all_results))
+    if not all_results:
+        return {"error": "No patent results found", "search_queries": queries}
 
-    # Cast similarity scores to float for JSON serialization
-    top_similar_ideas = [
-        {"idea": idea, "similarity": round(float(score), 2)} for idea, score in top_matches[:3]
-    ]
-
-    # Novelty score as a plain int
-    novelty_score = 100 - int(float(top_matches[0][1]) * 100)
+    # Step 3: Score similarity
+    scores = score_novelty(data.idea_text, all_results)
+    print("🔹 Novelty Score:", scores["novelty_score"])
+    print("🔹 Similar Patents:", scores["results"])
 
     return {
-        "novelty_score": novelty_score,
-        "top_similar_ideas": top_similar_ideas
+        "novelty_score": scores["novelty_score"],
+        "similar_patents": scores["results"],
+        # "search_queries": queries
     }
