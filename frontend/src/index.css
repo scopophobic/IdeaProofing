@@ -4,21 +4,69 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gradient-to-br from-thistle/20 via-white to-royal-purple/10 text-prussian-blue;
   }
 }
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 inline-flex items-center justify-center gap-2;
   }
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
+    @apply bg-gradient-to-r from-amethyst to-royal-purple text-white hover:from-royal-purple hover:to-amethyst shadow-lg hover:shadow-xl transform hover:scale-105;
+  }
+  .btn-white {
+    @apply bg-white text-royal-purple hover:bg-thistle shadow-lg hover:shadow-xl transform hover:scale-105;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
   }
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors duration-200;
+    @apply w-full px-4 py-2 border border-thistle/50 rounded-lg focus:ring-2 focus:ring-amethyst/50 focus:border-amethyst outline-none transition-all duration-200 bg-white/90 backdrop-blur-sm;
   }
   .card {
-    @apply bg-white rounded-xl shadow-md p-6;
+    @apply bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-thistle/50 transition-all duration-300;
   }
+  .text-primary-100 {
+    @apply text-white/90;
+  }
+  .bg-primary-100 {
+    @apply bg-amethyst/10;
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Gradient Text */
+.gradient-text {
+  @apply bg-gradient-to-r from-royal-purple to-amethyst bg-clip-text text-transparent;
+}
+
+/* Glass Effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-sm border border-thistle/50;
+}
+
+/* Hover Effects */
+.hover-lift {
+  @apply transform hover:scale-105 transition-transform duration-300;
+}
+
+.hover-glow {
+  @apply transition-shadow duration-300 hover:shadow-lg hover:shadow-amethyst/20;
 } 
