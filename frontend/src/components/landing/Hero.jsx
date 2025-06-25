@@ -1,6 +1,6 @@
 import { RocketLaunchIcon } from "@heroicons/react/24/outline";
 
-export const Hero = ({ onGetStarted }) => {
+export const Hero = ({ onGetStarted, isSignedIn = false }) => {
   return (
     <div className="relative overflow-hidden">
       {/* Background gradient */}
@@ -25,8 +25,15 @@ export const Hero = ({ onGetStarted }) => {
             className="btn btn-primary text-lg px-8 py-4"
           >
             <RocketLaunchIcon className="h-6 w-6" />
-            Start Analyzing Your Idea
+            {isSignedIn
+              ? "Start Analyzing Your Idea"
+              : "Get Started - Sign Up Free"}
           </button>
+          {!isSignedIn && (
+            <p className="text-sm text-prussian-blue/60 mt-4">
+              No credit card required • Start analyzing in seconds
+            </p>
+          )}
         </div>
 
         {/* Feature highlights */}

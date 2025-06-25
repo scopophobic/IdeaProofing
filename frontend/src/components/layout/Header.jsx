@@ -1,12 +1,25 @@
 import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 export const Header = ({
   showBack = false,
   onBack,
   showAnalyzer = false,
   onAnalyzer,
+  isSignedIn = false,
 }) => {
+  const { signOut } = useAuth();
+  const { user } = useUser();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -42,6 +55,44 @@ export const Header = ({
               </svg>
               <span className="hidden sm:inline">Source Code</span>
             </a>
+
+            {/* Authentication Section */}
+            {isSignedIn ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amethyst to-royal-purple rounded-full flex items-center justify-center text-white font-medium">
+                    {user?.firstName?.charAt(0) ||
+                      user?.emailAddresses?.[0]?.emailAddress?.charAt(0) ||
+                      "U"}
+                  </div>
+                  <span className="hidden sm:inline">
+                    {user?.firstName || user?.emailAddresses?.[0]?.emailAddress}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-600 hover:text-royal-purple transition-colors duration-200 text-sm"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/sign-in"
+                  className="text-gray-600 hover:text-royal-purple transition-colors duration-200 text-sm"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/sign-up"
+                  className="bg-gradient-to-r from-amethyst to-royal-purple text-white px-4 py-2 rounded-lg hover:from-royal-purple hover:to-amethyst transition-all duration-300 text-sm"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+
             {showBack && (
               <button
                 onClick={onBack}

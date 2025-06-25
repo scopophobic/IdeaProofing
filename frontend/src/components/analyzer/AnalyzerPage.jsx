@@ -11,12 +11,12 @@ export const AnalyzerPage = ({ onBack }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/analyze", {
+      const response = await fetch("http://127.0.0.1:8000/validate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ idea }),
+        body: JSON.stringify({ idea_text: idea }),
       });
 
       if (!response.ok) {

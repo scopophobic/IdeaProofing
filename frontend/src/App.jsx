@@ -27,11 +27,15 @@ import {
   ChartPieIcon,
   RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
+import { ClerkProvider, SignIn, SignUp, useAuth } from "@clerk/clerk-react";
 
-// Wrapper component t
-// o handle navigation
+// Replace with your Clerk publishable key
+const CLERK_PUBLISHABLE_KEY = "pk_test_YXNzdXJlZC1kdWNrbGluZy05MC5jbGVyay5hY2NvdW50cy5kZXYk";
+
+// Wrapper component to handle navigation
 const AppContent = () => {
   const navigate = useNavigate();
+  const { isSignedIn, isLoaded, getToken } = useAuth();
   const [idea, setIdea] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -48,6 +52,13 @@ const AppContent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if user is authenticated
+    if (!isSignedIn) {
+      setError("Please sign in to validate your idea");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
@@ -99,9 +110,21 @@ const AppContent = () => {
     simulateProgress();
 
     try {
-      const response = await axios.post("/api/validate", {
-        idea_text: idea,
-      });
+      // Get the authentication token
+      const token = await getToken();
+
+      const response = await axios.post(
+        "/api/validate",
+        {
+          idea_text: idea,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       setResult(response.data);
       setAnalysisStep("results");
     } catch (err) {
@@ -186,6 +209,10 @@ const AppContent = () => {
   );
 
   const handleGetStarted = () => {
+    if (!isSignedIn) {
+      navigate("/sign-in");
+      return;
+    }
     setShowAnalyzer(true);
     navigate("/analyzer");
   };
@@ -195,17 +222,72 @@ const AppContent = () => {
     navigate("/");
   };
 
+  // Show loading state while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-thistle/5 via-white to-thistle/10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-royal-purple mx-auto mb-4"></div>
+          <p className="text-royal-purple">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-thistle/5 via-white to-thistle/10">
-      <Header showBack={showAnalyzer} onBack={handleBack} />
+      <Header
+        showBack={showAnalyzer}
+        onBack={handleBack}
+        isSignedIn={isSignedIn}
+      />
       <Routes>
         <Route
           path="/"
-          element={<LandingPage onGetStarted={handleGetStarted} />}
+          element={
+            <LandingPage
+              onGetStarted={handleGetStarted}
+              isSignedIn={isSignedIn}
+            />
+          }
         />
         <Route
           path="/analyzer"
-          element={<AnalyzerPage onBack={handleBack} />}
+          element={
+            isSignedIn ? (
+              <AnalyzerPage onBack={handleBack} />
+            ) : (
+              <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                  <p className="text-royal-purple mb-4">
+                    Please sign in to access the analyzer
+                  </p>
+                  <button
+                    onClick={() => navigate("/sign-in")}
+                    className="bg-royal-purple text-white px-6 py-2 rounded-lg hover:bg-royal-purple/90"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </div>
+            )
+          }
+        />
+        <Route
+          path="/sign-in"
+          element={
+            <div className="flex items-center justify-center min-h-screen">
+              <SignIn routing="path" path="/sign-in" />
+            </div>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <div className="flex items-center justify-center min-h-screen">
+              <SignUp routing="path" path="/sign-up" />
+            </div>
+          }
         />
       </Routes>
     </div>
@@ -214,9 +296,11 @@ const AppContent = () => {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+      <Router>
+        <AppContent />
+      </Router>
+    </ClerkProvider>
   );
 }
 
