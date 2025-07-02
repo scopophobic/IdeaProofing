@@ -1,15 +1,16 @@
-import jwt
 import requests
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 import json
 from config import settings
+from jose import jwt  # Use python-jose for JWT verification
 
 # Clerk configuration from settings
 CLERK_JWT_ISSUER = settings.CLERK_JWT_ISSUER
 CLERK_JWT_AUDIENCE = settings.CLERK_JWT_AUDIENCE
 CLERK_JWKS_URL = f"{CLERK_JWT_ISSUER}/.well-known/jwks.json"
+# CLERK_JWKS_URL = CLERK_JWT_ISSUER
 
 # Security scheme
 security = HTTPBearer()
@@ -69,13 +70,11 @@ def get_jwks():
     return jwks_cache
 
 def get_signing_key(kid: str):
-    """Get the signing key for a specific key ID"""
+    """Get the signing key (JWK dict) for a specific key ID"""
     jwks = get_jwks()
-    
     for key in jwks.get("keys", []):
         if key.get("kid") == kid:
             return key
-    
     print(f"❌ Signing key not found for kid: {kid}")
     print(f"   Available keys: {[k.get('kid') for k in jwks.get('keys', [])]}")
     raise HTTPException(
@@ -84,7 +83,7 @@ def get_signing_key(kid: str):
     )
 
 def verify_jwt_token(token: str) -> dict:
-    """Verify and decode a Clerk JWT token"""
+    """Verify and decode a Clerk JWT token using python-jose and JWK dict"""
     try:
         print(f"🔍 Verifying JWT token...")
         print(f"   Issuer: {CLERK_JWT_ISSUER}")
@@ -102,38 +101,22 @@ def verify_jwt_token(token: str) -> dict:
                 detail="Invalid token: missing key ID"
             )
         
-        # Get the signing key
+        # Get the signing key (JWK dict)
         signing_key = get_signing_key(kid)
         print(f"✅ Found signing key for KID: {kid}")
         
-        # Verify and decode the token
+        # Use python-jose to verify the JWT using the JWK dict
         payload = jwt.decode(
             token,
             signing_key,
             algorithms=["RS256"],
             audience=CLERK_JWT_AUDIENCE,
             issuer=CLERK_JWT_ISSUER,
-            options={"verify_signature": True}
         )
-        
         print(f"✅ JWT verification successful")
         print(f"   User ID: {payload.get('sub')}")
         print(f"   Email: {payload.get('email')}")
-        
         return payload
-        
-    except jwt.ExpiredSignatureError:
-        print("❌ Token has expired")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired"
-        )
-    except jwt.InvalidTokenError as e:
-        print(f"❌ Invalid token: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
-        )
     except Exception as e:
         print(f"❌ Token verification failed: {str(e)}")
         raise HTTPException(

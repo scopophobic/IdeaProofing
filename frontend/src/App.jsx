@@ -8,6 +8,8 @@ import {
 import { Header } from "./components/layout/Header";
 import { LandingPage } from "./components/landing/LandingPage";
 import { AnalyzerPage } from "./components/analyzer/AnalyzerPage";
+import { AuthPage } from "./components/auth/AuthPage";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import axios from "axios";
 import {
   LightBulbIcon,
@@ -27,10 +29,12 @@ import {
   ChartPieIcon,
   RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
-import { ClerkProvider, SignIn, SignUp, useAuth } from "@clerk/clerk-react";
+import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 
-// Replace with your Clerk publishable key
-const CLERK_PUBLISHABLE_KEY = "pk_test_YXNzdXJlZC1kdWNrbGluZy05MC5jbGVyay5hY2NvdW50cy5kZXYk";
+// Get Clerk publishable key from environment variables
+const CLERK_PUBLISHABLE_KEY =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_YXNzdXJlZC1kdWNrbGluZy05MC5jbGVyay5hY2NvdW50cy5kZXYk";
 
 // Wrapper component to handle navigation
 const AppContent = () => {
@@ -254,41 +258,13 @@ const AppContent = () => {
         <Route
           path="/analyzer"
           element={
-            isSignedIn ? (
+            <ProtectedRoute>
               <AnalyzerPage onBack={handleBack} />
-            ) : (
-              <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                  <p className="text-royal-purple mb-4">
-                    Please sign in to access the analyzer
-                  </p>
-                  <button
-                    onClick={() => navigate("/sign-in")}
-                    className="bg-royal-purple text-white px-6 py-2 rounded-lg hover:bg-royal-purple/90"
-                  >
-                    Sign In
-                  </button>
-                </div>
-              </div>
-            )
+            </ProtectedRoute>
           }
         />
-        <Route
-          path="/sign-in"
-          element={
-            <div className="flex items-center justify-center min-h-screen">
-              <SignIn routing="path" path="/sign-in" />
-            </div>
-          }
-        />
-        <Route
-          path="/sign-up"
-          element={
-            <div className="flex items-center justify-center min-h-screen">
-              <SignUp routing="path" path="/sign-up" />
-            </div>
-          }
-        />
+        <Route path="/sign-in" element={<AuthPage />} />
+        <Route path="/sign-up" element={<AuthPage />} />
       </Routes>
     </div>
   );

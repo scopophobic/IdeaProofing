@@ -1,0 +1,10 @@
+from config import settings
+
+
+CLERK_JWT_ISSUER = settings.CLERK_JWT_ISSUER
+CLERK_JWT_AUDIENCE = settings.CLERK_JWT_AUDIENCE
+
+print(CLERK_JWT_ISSUER)
+print(CLERK_JWT_AUDIENCE)
+
+

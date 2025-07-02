@@ -37,7 +37,7 @@ export const Hero = ({ onGetStarted, isSignedIn = false }) => {
         </div>
 
         {/* Feature highlights */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* `<div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="card backdrop-blur-sm bg-white/90 border border-thistle/50">
             <div className="text-royal-purple text-4xl mb-4">🎯</div>
             <h3 className="text-lg font-semibold text-prussian-blue mb-2">
@@ -68,7 +68,7 @@ export const Hero = ({ onGetStarted, isSignedIn = false }) => {
               idea.
             </p>
           </div>
-        </div>
+        </div>` */}
       </div>
     </div>
   );

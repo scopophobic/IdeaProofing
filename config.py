@@ -7,10 +7,10 @@ load_dotenv()
 
 class Settings:
     # Clerk Configuration
-    CLERK_PUBLISHABLE_KEY: str = os.getenv("CLERK_PUBLISHABLE_KEY", "pk_test_YOUR_CLERK_PUBLISHABLE_KEY")
-    CLERK_SECRET_KEY: str = os.getenv("CLERK_SECRET_KEY", "sk_test_YOUR_CLERK_SECRET_KEY")
-    CLERK_JWT_ISSUER: str = os.getenv("CLERK_JWT_ISSUER", "https://clerk.your-domain.com")
-    CLERK_JWT_AUDIENCE: str = os.getenv("CLERK_JWT_AUDIENCE", "your-audience")
+    CLERK_PUBLISHABLE_KEY: str = os.getenv("CLERK_PUBLISHABLE_KEY")
+    CLERK_SECRET_KEY: str = os.getenv("CLERK_SECRET_KEY")
+    CLERK_JWT_ISSUER: str = os.getenv("CLERK_JWT_ISSUER")
+    CLERK_JWT_AUDIENCE: str = os.getenv("CLERK_JWT_AUDIENCE")
     
     # API Configuration
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
