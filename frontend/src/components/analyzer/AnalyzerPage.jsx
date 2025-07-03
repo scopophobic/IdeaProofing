@@ -3,6 +3,8 @@ import { useAuthenticatedFetch, handleApiError } from "../../utils/auth";
 import { IdeaInputForm } from "./IdeaInputForm";
 import { AnalysisResults } from "./AnalysisResults";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const AnalyzerPage = ({ onBack }) => {
   const [idea, setIdea] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,13 +25,10 @@ export const AnalyzerPage = ({ onBack }) => {
     setResults(null);
 
     try {
-      const response = await authenticatedFetch(
-        "http://127.0.0.1:8000/validate",
-        {
-          method: "POST",
-          body: JSON.stringify({ idea_text: idea }),
-        }
-      );
+      const response = await authenticatedFetch(`${BASE_URL}/validate`, {
+        method: "POST",
+        body: JSON.stringify({ idea_text: idea }),
+      });
 
       const data = await response.json();
       console.log(data);
